@@ -243,14 +243,14 @@ contract Strategy is BaseStrategy {
         //dai to ntrump
         uint256 outAmount = bpool.calcOutGivenIn(balanceD, weightD, balanceN, weightN, lotSize, swapFee);
 
-        if(outAmount >= lotSize.mul(minBuy)){
+        if(outAmount >= lotSize.mul(minBuy).div(1e18)){
             return(true,false);
         }
 
         //ntrump to dai
         outAmount = bpool.calcOutGivenIn(balanceN, weightN, balanceD, weightD, lotSize, swapFee);
 
-        if(outAmount.mul(minSell) >=  lotSize){
+        if(outAmount.mul(minSell).div(1e18) >=  lotSize){
              return(false, true);
         }
 
