@@ -6,7 +6,7 @@ def genericStateOfStrat(strategy, currency, vault):
     decimals = currency.decimals()
     print(f"\n----state of {strategy.name()}----")
 
-    print("Want:", currency.balanceOf(strategy)/  (1 ** decimals))
+    print("Want:", currency.balanceOf(strategy)/  (10 ** decimals))
     print("Total assets estimate:", strategy.estimatedTotalAssets()/  (10 ** decimals))
     strState = vault.strategies(strategy)
     totalDebt = strState[5]/  (10 ** decimals)

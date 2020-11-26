@@ -1,5 +1,5 @@
 import pytest
-from brownie import config
+from brownie import config, config
 
 @pytest.fixture
 def andre(accounts):
@@ -8,9 +8,21 @@ def andre(accounts):
 
 
 @pytest.fixture
-def token(andre, Token):
-    yield andre.deploy(Token)
+def token(dai):
+    yield dai
 
+
+@pytest.fixture
+def ntrump(interface):
+    yield interface.nTrump('0x44Ea84a85616F8e9cD719Fc843DE31D852ad7240')
+@pytest.fixture
+def dai(interface):
+    yield interface.ERC20('0x6b175474e89094c44da98b954eedeac495271d0f')
+    
+
+@pytest.fixture
+def bpool(interface):
+    yield interface.bPool('0xEd0413D19cDf94759bBE3FE9981C4bd085b430Cf')
 
 @pytest.fixture
 def gov(accounts):
@@ -32,7 +44,7 @@ def guardian(accounts):
 @pytest.fixture
 def vault(pm, gov, rewards, guardian, token):
     Vault = pm(config["dependencies"][0]).Vault
-    vault = guardian.deploy(Vault, token, gov, rewards, "", "")
+    vault = gov.deploy(Vault, token, gov, rewards, "", "")
     yield vault
 
 
@@ -104,14 +116,46 @@ def greyhat(accounts, andre, token, vault):
 
 
 @pytest.fixture
-def whale(accounts, andre, token, vault):
-    # Totally in it for the tech
-    a = accounts[9]
-    # Has 10% of tokens (was in the ICO)
-    bal = token.totalSupply() // 10
-    token.transfer(a, bal, {"from": andre})
-    # Unlimited Approvals
-    token.approve(vault, 2 ** 256 - 1, {"from": a})
-    # Deposit half their stack
-    vault.deposit(bal // 2, {"from": a})
-    yield a
+def whale(accounts, web3, dai, gov, chain):
+    #big binance7 wallet
+    acc = accounts.at('0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8', force=True)
+    #big binance8 wallet
+    #acc = accounts.at('0xf977814e90da44bfa03b6295a0616a897441acec', force=True)
+
+    
+    dai.transfer(gov, 10000 *1e18,{"from": acc} )
+
+    yield acc
+
+@pytest.fixture
+def ntrumpWhale(accounts):
+    #big binance7 wallet
+    acc = accounts.at('0x228c1334fc57Eb6E02EcC448E749a041124321c1', force=True)
+   
+    yield acc
+
+
+@pytest.fixture()
+def strategy(strategist,gov, keeper, vault,  Strategy):
+    strategy = strategist.deploy(Strategy,vault)
+    strategy.setKeeper(keeper)
+
+    vault.addStrategy(
+        strategy,
+        2 ** 256 - 1,2 ** 256 - 1, 
+        1000,  # 0.5% performance fee for Strategist
+        {"from": gov},
+    )
+    yield strategy
+
+
+@pytest.fixture()
+def running_strategy(gov, strategy, dai, vault, whale):
+
+    amount = Wei('10000 ether')
+    dai.approve(vault, amount, {'from': whale})
+    vault.deposit(amount, {'from': whale})    
+
+    strategy.harvest({'from': gov})
+    
+    yield strategy
