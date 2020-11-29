@@ -59,6 +59,19 @@ def keeper(accounts):
     # This is our trusty bot!
     yield accounts[4]
 
+@pytest.fixture
+def live_strategy(Strategy):
+    yield Strategy.at('0xAD97639b0a94549E9391C20D5cAD0d52be96A383')
+
+@pytest.fixture
+def live_vault(Strategy, pm):
+    Vault = pm(config["dependencies"][0]).Vault
+    
+    yield Vault.at('0xba81fB02d5E7B94B341E82d1959c372590b852bE')
+
+@pytest.fixture
+def samdev(accounts):
+    yield accounts.at('0xC3D6880fD95E06C816cB030fAc45b3ffe3651Cb0', force=True)
 
 @pytest.fixture
 def strategy(strategist, keeper, vault, Strategy):
@@ -118,9 +131,9 @@ def greyhat(accounts, andre, token, vault):
 @pytest.fixture
 def whale(accounts, web3, dai, gov, chain):
     #big binance7 wallet
-    acc = accounts.at('0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8', force=True)
+    #acc = accounts.at('0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8', force=True)
     #big binance8 wallet
-    #acc = accounts.at('0xf977814e90da44bfa03b6295a0616a897441acec', force=True)
+    acc = accounts.at('0xf977814e90da44bfa03b6295a0616a897441acec', force=True)
 
     
     dai.transfer(gov, 10000 *1e18,{"from": acc} )

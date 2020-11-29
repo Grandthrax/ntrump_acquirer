@@ -29,14 +29,36 @@ interface IShareToken {
 
 interface IMarket {
    
+    function derivePayoutDistributionHash(uint256[] memory _payoutNumerators) external view returns (bytes32);
+    function doInitialReport(uint256[] memory _payoutNumerators, string memory _description, uint256 _additionalStake) external returns (bool);
+    function getUniverse() external view returns (address);
+    function getDisputeWindow() external view returns (address);
+    function getNumberOfOutcomes() external view returns (uint256);
+    function getNumTicks() external view returns (uint256);
+    function getMarketCreatorSettlementFeeDivisor() external view returns (uint256);
+    function getForkingMarket() external view returns (IMarket _market);
     function getEndTime() external view returns (uint256);
     function getWinningPayoutDistributionHash() external view returns (bytes32);
+    function getWinningPayoutNumerator(uint256 _outcome) external view returns (uint256);
+    function getWinningReportingParticipant() external view returns (address);
+    function getReputationToken() external view returns (address);
     function getFinalizationTime() external view returns (uint256);
+    function getInitialReporter() external view returns (address);
+    function getDesignatedReportingEndTime() external view returns (uint256);
+    function getValidityBondAttoCash() external view returns (uint256);
+    function affiliateFeeDivisor() external view returns (uint256);
+    function getNumParticipants() external view returns (uint256);
     function getDisputePacingOn() external view returns (bool);
+    function deriveMarketCreatorFeeAmount(uint256 _amount) external view returns (uint256);
+    function recordMarketCreatorFees(uint256 _marketCreatorFees, address _sourceAccount, bytes32 _fingerprint) external returns (bool);
+    function isContainerForReportingParticipant(address _reportingParticipant) external view returns (bool);
     function isFinalizedAsInvalid() external view returns (bool);
     function finalize() external returns (bool);
     function isFinalized() external view returns (bool);
-    function doInitialReport(uint256[] memory _payoutNumerators, string memory _description, uint256 _additionalStake) external returns (bool);
+    function isForkingMarket() external view returns (bool);
+    function getOpenInterest() external view returns (uint256);
+    function participants(uint256 index) external view returns (address);
+   
 }
 
 interface bPool{
@@ -202,10 +224,10 @@ contract Strategy is BaseStrategy {
 
         uint256 ntrumpBal = ntrump.balanceOf(address(this));
 
-        if(buy && want.balanceOf(address(this)) > lotSizeBuy){
+        if(buy && want.balanceOf(address(this)) >= lotSizeBuy){
             swap(address(want), address(ntrump), lotSizeBuy);
 
-        }else if (sell && ntrumpBal > 0) {
+        }else if (sell && ntrumpBal >= 0) {
             swap(address(ntrump), address(want), Math.min(ntrumpBal, lotSizeSell));
         }
 
@@ -296,11 +318,11 @@ contract Strategy is BaseStrategy {
        
         (bool buy,bool sell) = sellOrBuy();
 
-        if(buy && want.balanceOf(address(this)) > lotSizeBuy){
+        if(buy && want.balanceOf(address(this)) >= lotSizeBuy){
             return true;
         }
         
-        if (sell && ntrump.balanceOf(address(this)) > lotSizeSell){
+        if (sell && ntrump.balanceOf(address(this)) >= lotSizeSell){
             return true;
         }
     }
