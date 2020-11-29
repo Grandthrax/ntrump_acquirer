@@ -116,11 +116,13 @@ def test_end_market( live_strategy,interface, bpool,accounts, live_vault,chain,n
     assert market.isFinalized() == True
     assert  live_strategy.harvestTrigger(1e16) == False
     ntrump.claim(ntrumpWhale, {'from': ntrumpWhale})
-    #genericStateOfStrat(live_strategy, dai, live_vault)
-    #genericStateOfVault(live_vault, dai)
+    genericStateOfStrat(live_strategy, dai, live_vault)
+    genericStateOfVault(live_vault, dai)
     assert  live_strategy.harvestTrigger(1e16) == True
     live_strategy.harvest({'from': samdev})
     assert live_vault.pricePerShare() >1e18 #profit
+    genericStateOfStrat(live_strategy, dai, live_vault)
+    genericStateOfVault(live_vault, dai)
 
 
 
